@@ -2,29 +2,13 @@ html, body{
   margin: 0;
   overflow-x: hidden;
   height: 100%;
-  background-color: #090909;
-  color: white;
+}
+
+*{
+  font-family: monospace;
 }
 
 canvas{
   width: 100%;
-}
-
-#canvas{
-  outline: 5px solid white;
-  background-color: black;
-}
-
-.layerSelected{
-  outline: 5px solid cyan;
-}
-
-#alphaMap{
-  display: none;
-}
-#colorMap{
-  display: none;
-}
-#lightMap{
-  display: none;
+  image-rendering: pixelated;
 }

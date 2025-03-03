@@ -2,26 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Page title</title>
   <link rel="stylesheet" href="styles.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <input type="color" id="colorPicker"><input type="range" id="brushSize"><br>
-  <div class="buttonCont">
-    <button id="btnAlpha" onclick="transferLayerFocus('alpha')" class="layerSelected">Alpha</button>
-    <button id="btnColor" onclick="transferLayerFocus('color')">Color</button>
-    <button id="btnLight" onclick="transferLayerFocus('light')">Light</button>
-  </div>
-  Width: <input type="number" id="canvasWidth" value="300"><br>
-  Height: <input type="number" id="canvasHeight" value="300"><br>
-  <button onclick="download()">Download</button>
-  
-  <canvas id="alphaMap"></canvas>
-  <canvas id="colorMap"></canvas>
-  <canvas id="lightMap"></canvas>
+  <input type="file" id="sceneInput"><br>
+  Distance Map: <input type="checkbox" id="drawDistMap"><br>
+  <button onclick="render()">Render</button>
+  <button onclick="download(canvas)">Download</button><br>
+  <span id="displaySpan"></span>
   <script src="utils.js"></script>
+  <script src="optimization.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
