@@ -1,65 +1,81 @@
-function getOffsets(area) {
-  const cols = Math.ceil(Math.sqrt(area));
-  const rows = Math.ceil(area / cols);
+class layer{
+  constructor(id) {
+    this.canvas = document.getElementById(id)
+    this.ctx = this.canvas.getContext("2d")
+    this.id = id
+  }
+}
 
-  const offsets = [];
+function setCanvSize() {
+  let width = document.getElementById("canvasWidth").value;
+  let height = document.getElementById("canvasHeight").value;
 
-  for (let index = 0; index < area; index++) {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
+  function resetCanvas(map) {
+    map.canvas.width = width;
+    map.canvas.height = height;
+    map.ctx.fillStyle = "black";
+    map.ctx.fillRect(0, 0, width, height);
+  }
 
-    const x = (cols > 1 ? col / (cols - 1) : 0) * 0.999
-    const y = (rows > 1 ? row / (rows - 1) : 0) * 0.999
+  canvas.width = width;
+  canvas.height = height;
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, width, height);
+
+  [alphaMap, colorMap, lightMap].forEach(resetCanvas);
+}
+
+document.getElementById("canvasWidth").addEventListener("change", setCanvSize)
+
+document.getElementById("canvasHeight").addEventListener("change", setCanvSize)
+
+canvas.addEventListener("touchstart", (e)=>{startDraw(e)})
+canvas.addEventListener("touchmove", (e)=>{moveDraw(e)})
+canvas.addEventListener("touchend", (e)=>{if(curLayer.id == "alphaMap") fixAlpha()})
+
+canvas.addEventListener("mousedown", (e)=>{startDraw(e)})
+canvas.addEventListener("mousemove", (e)=>{moveDraw(e)})
+canvas.addEventListener("mouseup", (e)=>{if(curLayer.id == "alphaMap") fixAlpha()})
+
+function startDraw(e) {
+  e.preventDefault()
+  
+  pen.pos = getCanvasRelativePosition(e)
+  pen.lastPos = getCanvasRelativePosition(e)
+  
+  pen.draw()
+}
+function moveDraw(e) {
+  e.preventDefault()
+  
+  pen.lastPos.x = pen.pos.x
+  pen.lastPos.y = pen.pos.y
+  pen.pos = getCanvasRelativePosition(e)
+  
+  pen.draw()
+}
+
+function getCanvasRelativePosition(event) {
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
     
-    offsets.push({offX: x, offY: y});
+  let clientX, clientY;
+    
+  if(event.touches){
+    clientX = event.touches[0].clientX;
+    clientY = event.touches[0].clientY;
+  }else{
+    clientX = event.clientX;
+    clientY = event.clientY;
   }
 
-  return offsets;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
 }
 
-function drawProgressBar(progress){
-  let output = "["
-  
-  let barLength = 35
-  
-  for(let i = 0; i<barLength; i++){
-    output += (i/barLength<progress/100)?"#":"_"    
-  }
-  
-  output += "]"+progress+"%\n"
-  
-  return output
-}
+document.getElementById("colorPicker").addEventListener("change", ()=>{pen.color = document.getElementById("colorPicker").value})
 
-function clockify(seconds) {
-  seconds = Math.floor(seconds)
-  let secs = String(seconds%60).padStart(2, "0")
-  let mins = String(Math.floor(seconds/60)%60).padStart(2, "0")
-  let hrs = String(Math.floor(seconds/3600)).padStart(2, "0")
-  return `${hrs}:${mins}:${secs}`
-}
-
-function download(canv, data = "") {
-  return new Promise((resolve, reject) => {
-    canv.toBlob(function(blob) {
-      if (!blob) {
-        reject(new Error("Canvas is empty"));
-        return;
-      }
-      
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `LightMk2_(${data})_${canv.width}x${canv.height}_${Math.floor(Math.random() * 1000)}.png`;
-       
-      document.body.appendChild(link);
-      link.click();
-
-      URL.revokeObjectURL(url);
-      link.remove();
-
-      resolve();
-    }, 'image/png');
-  });
-}
+document.getElementById("brushSize").addEventListener("change", ()=>{pen.radius = parseInt(document.getElementById("brushSize").value)})
