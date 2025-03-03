@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <input type="file" id="sceneInput"><br>
+  Distance Map: <input type="checkbox" id="drawDistMap"><br>
+  <button onclick="render()">Render</button>
+  <button onclick="download(canvas)">Download</button><br>
+  <span id="displaySpan"></span>
+  <script src="utils.js"></script>
+  <script src="optimization.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

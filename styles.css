@@ -1,0 +1,14 @@
+html, body{
+  margin: 0;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+*{
+  font-family: monospace;
+}
+
+canvas{
+  width: 100%;
+  image-rendering: pixelated;
+}
