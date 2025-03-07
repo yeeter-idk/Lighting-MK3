@@ -203,11 +203,11 @@ function fireRay(x, y) {
       
       index = (x | 0) + (y | 0) * width
       opacity = settings.alphaMap[index]
-    }
+    }    
+    path.push((x | 0) + (y | 0) * width)
+    
     x -= dx
     y -= dy
-       
-    path.push((x | 0) + (y | 0) * width)
   }
   
   return path.reverse()

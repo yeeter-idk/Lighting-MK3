@@ -51,7 +51,7 @@ function download(canv, data = "") {
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `LightMk3_(${data})_${canv.width}x${canv.height}_${Math.floor(Math.random() * 1000)}.png`;
+      link.download = `LightMk2_(${data})_${canv.width}x${canv.height}_${Math.floor(Math.random() * 1000)}.png`;
        
       document.body.appendChild(link);
       link.click();
