@@ -15,7 +15,13 @@ let settings = {
   alphaMap: [],
   pixelsToRender: 0,
   pixelOffsets: [],
-  precomputedAngles: {data: [], amount: 1000}
+  precomputedAngles: {data: [], amount: 1000},
+  previewResolution: 5
+}
+
+function updateSettings() {
+  settings.iso = parseFloat(document.getElementById("iso").value)
+  settings.bounces = parseFloat(document.getElementById("lightBounces").value)
 }
 
 let scene = {
@@ -51,13 +57,13 @@ document.getElementById('sceneInput').addEventListener('change', function(event)
 });
 
 async function render() {
+  await setup()
+  
   let width = scene.width
   let height = scene.height
   
   ctx.fillStyle = "black"
-  ctx.fillRect(0, 0, width, height)
-  
-  await setup()
+  ctx.fillRect(0, 0, width, height)  
   
   let drawDistanceMap = document.getElementById("drawDistMap").checked
   
@@ -149,6 +155,91 @@ async function render() {
   })
 }
 
+async function renderPreview() {
+  await setup()
+  
+  let width = scene.width / settings.previewResolution
+  let height = scene.height / settings.previewResolution
+  width = Math.floor(width)
+  height = Math.floor(height)
+  
+  ctx.fillStyle = "black"
+  ctx.fillRect(0, 0, scene.width, scene.height)
+  
+  let drawDistanceMap = document.getElementById("drawDistMap").checked
+  
+  settings.pixelOffsets = getOffsets(settings.raysPerPixel)
+ 
+  let imageData = ctx.getImageData(0, 0, width, height)
+  let data = imageData.data
+  
+  let pixels = width*height
+  let perFrame = 50
+  
+  let index = 0
+  let pixelsRendered = 0
+  
+  let lastPreview = 0
+  
+  return new Promise((resolve)=>{
+    let loop = setInterval(()=>{
+      for(let j = 0; j<perFrame; j++){
+        let x = index%width
+        let y = Math.floor(index/width)
+        
+        let translatedPos = {x: (x / width) * scene.width, y: (y / height) * scene.height}
+        
+        let translatedIndex = Math.floor(translatedPos.x) + Math.floor(translatedPos.y) * scene.width
+        
+        if(!drawDistanceMap){
+          if(settings.alphaMap[translatedIndex] == 0){
+            let [r, g, b] = calculatePixel(translatedPos.x, translatedPos.y)
+            data[index*4] = r
+            data[index*4+1] = g
+            data[index*4+2] = b
+            
+            pixelsRendered++
+          }
+        }else{
+          let nearest = settings.distanceMap[translatedIndex]  
+          
+          if(nearest != 0){         
+            data[index*4] = nearest*10
+            data[index*4+1] = nearest*10
+            data[index*4+2] = nearest*10
+          }else{
+            data[index*4] = 255
+            data[index*4+1] = 255
+            data[index*4+2] = 255
+          }
+        }
+        
+        index++
+        if(index >= pixels){
+          clearInterval(loop)
+        
+          ctx.putImageData(imageData, 0, 0)
+          
+          console.log("done preview")
+          
+          resolve()
+          return
+        }
+      }
+      
+      let progress = Math.round((pixelsRendered / settings.pixelsToRender) * 100000) / 1000; 
+      
+      displaySpan.innerText = "PREVIEW\n" + drawProgressBar(progress);
+
+      if(Math.floor(progress / 5) != lastPreview) {
+        ctx.putImageData(imageData, 0, 0);
+        lastPreview = Math.floor(progress / 5);
+      }
+    })
+  })
+}
+
+
 function calculatePixel(x, y) {
   let r = 0, g = 0, b = 0;
   
@@ -179,14 +270,26 @@ function fireRay(x, y) {
   
   let anglesCached = settings.precomputedAngles.amount
   
-  let width = canvas.width, height = canvas.height;
+  let width = scene.width, height = scene.height;
 
   let dx, dy
   
   let path = []
   for(let i = 0; i<bounces+1; i++){
-    let angleIndex = (Math.random()*anglesCached | 0)*2
-    dx = settings.precomputedAngles.data[angleIndex], dy = settings.precomputedAngles.data[angleIndex+1]
+    if(i === 0){
+      let angleIndex = (Math.random() * anglesCached | 0) * 2;
+      dx = settings.precomputedAngles.data[angleIndex];
+      dy = settings.precomputedAngles.data[angleIndex + 1];
+    }else{
+      let {nx, ny} = getNormalAt(x, y);
+      //let reflected = reflect(dx, dy, nx, ny);
+      
+      let refAngle = Math.atan2(nx, ny) + (Math.random() - 0.5) * 3.14159;
+      
+      dx = Math.sin(refAngle);
+      dy = Math.cos(refAngle);
+    }
+    
     
     let index = (x | 0) + (y | 0) * width
     let opacity = settings.alphaMap[index]
@@ -197,7 +300,7 @@ function fireRay(x, y) {
       x += dx*safeDistance
       y += dy*safeDistance
       
-      if(x>-1 && x<width && y>-1 && y<height){}else{
+      if(!(x>-1 && x<width && y>-1 && y<height)){
         return path.reverse()
       }
       
@@ -212,6 +315,32 @@ function fireRay(x, y) {
   
   return path.reverse()
 }
+
+// chatgpt
+function getNormalAt(x, y) {
+  let {width, height} = scene;
+  let {distanceMap} = settings;
+
+  x = Math.floor(x);
+  y = Math.floor(y);
+
+  // Clamp coordinates
+  let xm1 = Math.max(x - 1, 0);
+  let xp1 = Math.min(x + 1, width - 1);
+  let ym1 = Math.max(y - 1, 0);
+  let yp1 = Math.min(y + 1, height - 1);
+
+  // Get finite differences
+  let dx = (distanceMap[xp1 + y * width] - distanceMap[xm1 + y * width]) * 0.5;
+  let dy = (distanceMap[x + yp1 * width] - distanceMap[x + ym1 * width]) * 0.5;
+
+  let length = Math.hypot(dx, dy);
+  if (length === 0) return {nx: 0, ny: 0};
+
+  return {nx: dx / length, ny: dy / length};
+}
+
+
 
 function calculateColor(sequence) {
   let r = 0, g = 0, b = 0;
