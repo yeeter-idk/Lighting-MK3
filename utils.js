@@ -17,6 +17,14 @@ function getOffsets(area) {
   return offsets;
 }
 
+function reflect(dx, dy, nx, ny) {
+  let dot = dx * nx + dy * ny;
+  return {
+    dx: dx - 2 * dot * nx,
+    dy: dy - 2 * dot * ny
+  };
+}
+
 function drawProgressBar(progress){
   let output = "["
   

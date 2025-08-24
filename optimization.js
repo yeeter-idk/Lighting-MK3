@@ -21,8 +21,10 @@ function generateCircularKernel(radius) {
 }
 
 function setup() {
-  let width = canvas.width
-  let height = canvas.height
+  updateSettings()
+
+  let width = scene.width
+  let height = scene.height
   
   let kernelRadius = 30
   

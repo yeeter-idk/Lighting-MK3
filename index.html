@@ -9,7 +9,10 @@
   <canvas id="canvas"></canvas>
   <input type="file" id="sceneInput"><br>
   Distance Map: <input type="checkbox" id="drawDistMap"><br>
-  <button onclick="render()">Render</button>
+  <button onclick="renderPreview()">Preview</button>
+  <button onclick="render()">Render</button><br>
+  ISO: <input type="number" id="iso" value="2"><br>
+  Light bounces: <input type="number" id="lightBounces" value="4"><br>
   <button onclick="download(canvas)">Download</button><br>
   <span id="displaySpan"></span>
   <script src="utils.js"></script>
