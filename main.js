@@ -227,7 +227,7 @@ async function renderPreview() {
         }
       }
       
-      let progress = Math.round((pixelsRendered / settings.pixelsToRender) * 100000) / 1000; 
+      let progress = Math.round((pixelsRendered / pixels) * 100000) / 1000; 
       
       displaySpan.innerText = "PREVIEW\n" + drawProgressBar(progress);
 
