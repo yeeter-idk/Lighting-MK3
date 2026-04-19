@@ -147,7 +147,9 @@ async function render() {
       lastLeft = timeLeft;
       lastSinceStart = timeSinceStart;
 
-      if(Math.floor(progress / 5) != lastPreview) {
+      let previewRate = 1; // every ___ %
+      
+      if(Math.floor(progress / previewRate) != lastPreview) {
         ctx.putImageData(imageData, 0, 0);
         lastPreview = Math.floor(progress / 5);
       }
